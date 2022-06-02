@@ -1,52 +1,49 @@
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
+from rest_framework.relations import SlugRelatedField
+from rest_framework.validators import UniqueTogetherValidator
 
-from posts.models import Comment, Follow, Group, Post, User
+from posts.models import Comment, Post, Follow, User, Group
+
+
+class PostSerializer(serializers.ModelSerializer):
+    author = SlugRelatedField(slug_field='username', read_only=True)
+
+    class Meta:
+        fields = '__all__'
+        model = Post
 
 
 class GroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Group
-        fields = '__all__'
-
-
-class PostSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(read_only=True,
-                                          slug_field='username')
-    pub_date = serializers.DateTimeField(read_only=True,
-                                         format='%Y-%m-%dT%H:%M:%SZ')
-
-    class Meta:
-        model = Post
-        fields = '__all__'
+        fields = ("id", "title", "slug", "description")
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(read_only=True,
-                                          slug_field='username')
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field='username'
+    )
 
     class Meta:
-        model = Comment
         fields = '__all__'
-        read_only_fields = ('post', )
+        model = Comment
 
 
 class FollowSerializer(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(read_only=True,
-                                        slug_field='username')
-    following = serializers.SlugRelatedField(slug_field='username',
-                                             queryset=User.objects)
+    user = serializers.SlugRelatedField(
+        slug_field='username', read_only=True,
+        default=serializers.CurrentUserDefault()
+    )
+    following = serializers.SlugRelatedField(
+        slug_field='username', queryset=User.objects.all()
+    )
 
     class Meta:
+        fields = '__all__'
         model = Follow
-        fields = ('user', 'following', )
-
-    def create(self, validated_data):
-        user = self.context['request'].user
-        following = validated_data['following']
-        if user == following:
-            raise ValidationError(detail='Нельзя подписаться на самого себя')
-        if len(Follow.objects.filter(user=user, following=following)) != 0:
-            raise ValidationError(code=400, detail='Вы уже подписаны')
-        return Follow.objects.create(user=user, following=following)
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Follow.objects.all(),
+                fields=['user', 'following']
+            )]
