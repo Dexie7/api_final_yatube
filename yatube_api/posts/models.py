@@ -76,4 +76,4 @@ class Follow(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"{self.user} подписан на {self.following}"
+        return f"{Follow.user} подписан на {Follow.following}"
