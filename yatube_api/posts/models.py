@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import F, Q
 
 User = get_user_model()
 
@@ -64,12 +65,15 @@ class Follow(models.Model):
     )
 
     class Meta:
-        ordering = ['-user']
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "following"], name="unique follow"
+            ),
+            models.CheckConstraint(
+                check=~Q(user=F('following')),
+                name='User_and_following_can_not_be_equal'
             )
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.user} подписан на {self.following}"
