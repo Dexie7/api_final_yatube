@@ -7,14 +7,14 @@ from posts.models import Comment, Follow, Group, Post, User
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
-        fields = ("id", "slug", "title", "description")
+        fields = '__all__'
 
 
 class PostSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field="username", read_only=True)
 
     class Meta:
-        fields = ("id", "author", "text", "pub_date", "image", "group")
+        fields = '__all__'
         model = Post
 
 
@@ -24,8 +24,8 @@ class CommentSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        read_only_fields = ('author', 'post')
-        fields = ("id", "author", "text", "created", "post")
+        read_only_fields = ('post',)
+        fields = '__all__'
         model = Comment
 
 

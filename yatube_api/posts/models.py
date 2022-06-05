@@ -28,6 +28,9 @@ class Post(models.Model):
         null=True,
     )
 
+    class Meta:
+        ordering = ('pub_date',)
+
     def __str__(self):
         return self.text
 
@@ -60,12 +63,13 @@ class Follow(models.Model):
         verbose_name="Автор",
     )
 
-    def __str__(self):
-        return f"{self.user} {self.following}"
-
     class Meta:
+        ordering = ['-user']
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "following"], name="unique follow"
             )
         ]
+
+    def __str__(self):
+        return f"{self.user} подписан на {self.following}"
