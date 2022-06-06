@@ -54,12 +54,16 @@ class Follow(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name="follower",
         verbose_name="Подписчик",
     )
     following = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name="following",
         verbose_name="Автор",
     )
@@ -76,4 +80,4 @@ class Follow(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"{Follow.user} подписан на {Follow.following}"
+        return f"{self.user.username} подписан на {self.following.username}"
